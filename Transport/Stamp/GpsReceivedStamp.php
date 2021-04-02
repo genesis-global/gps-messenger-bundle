@@ -12,7 +12,7 @@ use Symfony\Component\Messenger\Stamp\StampInterface;
  */
 final class GpsReceivedStamp implements StampInterface
 {
-    private Message $gpsMessage;
+    private $gpsMessage;
 
     public function __construct(Message $gpsMessage)
     {

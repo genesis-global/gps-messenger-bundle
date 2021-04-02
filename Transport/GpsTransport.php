@@ -14,11 +14,11 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
  */
 final class GpsTransport implements TransportInterface
 {
-    private PubSubClient $pubSubClient;
-    private GpsConfigurationInterface $gpsConfiguration;
-    private SerializerInterface $serializer;
-    private GpsReceiver $receiver;
-    private GpsSender $sender;
+    private $pubSubClient;
+    private $gpsConfiguration;
+    private $serializer;
+    private $receiver;
+    private $sender;
 
     public function __construct(
         PubSubClient $pubSubClient,

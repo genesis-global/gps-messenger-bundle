@@ -29,11 +29,11 @@ class GpsSenderTest extends TestCase
     private const ORDERED_KEY = 'ordered-key';
     private const TOPIC_NAME = 'topic-name';
 
-    private ObjectProphecy $gpsConfigurationProphecy;
-    private GpsSender $gpsSender;
-    private ObjectProphecy $pubSubClientProphecy;
-    private ObjectProphecy $serializerProphecy;
-    private ObjectProphecy $topicProphecy;
+    private $gpsConfigurationProphecy;
+    private $gpsSender;
+    private $pubSubClientProphecy;
+    private $serializerProphecy;
+    private $topicProphecy;
 
     protected function setUp(): void
     {

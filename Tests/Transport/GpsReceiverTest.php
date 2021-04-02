@@ -25,11 +25,11 @@ class GpsReceiverTest extends TestCase
 
     private const SUBSCRIPTION_NAME = 'subscription-name';
 
-    private ObjectProphecy $gpsConfigurationProphecy;
-    private GpsReceiver $gpsReceiver;
-    private ObjectProphecy $pubSubClientProphecy;
-    private ObjectProphecy $serializerProphecy;
-    private ObjectProphecy $subscriptionProphecy;
+    private $gpsConfigurationProphecy;
+    private $gpsReceiver;
+    private $pubSubClientProphecy;
+    private $serializerProphecy;
+    private $subscriptionProphecy;
 
     protected function setUp(): void
     {

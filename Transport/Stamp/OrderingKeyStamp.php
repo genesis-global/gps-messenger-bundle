@@ -11,7 +11,7 @@ use Symfony\Component\Messenger\Stamp\NonSendableStampInterface;
  */
 final class OrderingKeyStamp implements NonSendableStampInterface
 {
-    private string $orderingKey;
+    private $orderingKey;
 
     public function __construct(string $orderingKey)
     {

@@ -18,9 +18,9 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
  */
 final class GpsSender implements SenderInterface
 {
-    private PubSubClient $pubSubClient;
-    private GpsConfigurationInterface $gpsConfiguration;
-    private SerializerInterface $serializer;
+    private $pubSubClient;
+    private $gpsConfiguration;
+    private $serializer;
 
     public function __construct(
         PubSubClient $pubSubClient,

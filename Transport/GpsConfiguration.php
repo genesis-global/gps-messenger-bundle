@@ -9,9 +9,9 @@ namespace PetitPress\GpsMessengerBundle\Transport;
  */
 final class GpsConfiguration implements GpsConfigurationInterface
 {
-    private string $queueName;
-    private string $subscriptionName;
-    private int $maxMessagesPull;
+    private $queueName;
+    private $subscriptionName;
+    private $maxMessagesPull;
 
     public function __construct(string $queueName, string $subscriptionName, int $maxMessagesPull)
     {

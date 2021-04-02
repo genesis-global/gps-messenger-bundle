@@ -21,9 +21,9 @@ use Throwable;
  */
 final class GpsReceiver implements ReceiverInterface
 {
-    private PubSubClient $pubSubClient;
-    private GpsConfigurationInterface $gpsConfiguration;
-    private SerializerInterface $serializer;
+    private $pubSubClient;
+    private $gpsConfiguration;
+    private $serializer;
 
     public function __construct(
         PubSubClient $pubSubClient,
