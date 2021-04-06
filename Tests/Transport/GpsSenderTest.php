@@ -52,7 +52,7 @@ class GpsSenderTest extends TestCase
     public function testItDoesNotPublishIfTheLastStampIsOfTyeRedelivery(): void
     {
         $envelope = EnvelopeFactory::create(new RedeliveryStamp(0));
-        $envelopeArray = ['body' => []];
+        $envelopeArray = ['body' => [], 'headers' => ['class' => 'class', 'stamps' => 'stamps']];
 
         $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
 
