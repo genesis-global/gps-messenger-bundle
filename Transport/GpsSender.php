@@ -8,7 +8,6 @@ use Google\Cloud\PubSub\MessageBuilder;
 use Google\Cloud\PubSub\PubSubClient;
 use PetitPress\GpsMessengerBundle\Transport\Stamp\OrderingKeyStamp;
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Transport\Sender\SenderInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
@@ -40,7 +39,8 @@ final class GpsSender implements SenderInterface
         $encodedMessage = $this->serializer->encode($envelope);
 
         $messageBuilder = new MessageBuilder();
-        $messageBuilder = $messageBuilder->setData(json_encode($encodedMessage));
+        $messageBuilder = $messageBuilder->setData($encodedMessage['body'])
+            ->addAttribute('headers', json_encode($encodedMessage['headers'], JSON_THROW_ON_ERROR));
 
         $redeliveryStamp = $envelope->last(RedeliveryStamp::class);
         if ($redeliveryStamp instanceof RedeliveryStamp) {
@@ -53,10 +53,10 @@ final class GpsSender implements SenderInterface
             $messageBuilder = $messageBuilder->setOrderingKey($orderingKeyStamp->getOrderingKey());
         }
 
-        $this->pubSubClient
-            ->topic($this->gpsConfiguration->getQueueName())
-            ->publish($messageBuilder->build())
-        ;
+        $topic = $this->pubSubClient->topic($this->gpsConfiguration->getQueueName());
+        $topic->exists() ?: $topic->create();
+
+        $topic->publish($messageBuilder->build());
 
         return $envelope;
     }
