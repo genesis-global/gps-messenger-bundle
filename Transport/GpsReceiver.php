@@ -9,6 +9,7 @@ use Google\Cloud\PubSub\PubSubClient;
 use JsonException;
 use LogicException;
 use PetitPress\GpsMessengerBundle\Transport\Stamp\GpsReceivedStamp;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\Exception\TransportException;
@@ -21,9 +22,9 @@ use Throwable;
  */
 final class GpsReceiver implements ReceiverInterface
 {
-    private PubSubClient $pubSubClient;
-    private GpsConfigurationInterface $gpsConfiguration;
-    private SerializerInterface $serializer;
+    private $pubSubClient;
+    private $gpsConfiguration;
+    private $serializer;
 
     public function __construct(
         PubSubClient $pubSubClient,
@@ -41,10 +42,13 @@ final class GpsReceiver implements ReceiverInterface
     public function get(): iterable
     {
         try {
-            $messages = $this->pubSubClient
-                ->subscription($this->gpsConfiguration->getSubscriptionName())
-                ->pull(['maxMessages' => $this->gpsConfiguration->getMaxMessagesPull()])
-            ;
+            $topic = $this->pubSubClient->topic($this->gpsConfiguration->getQueueName());
+            $topic->exists() ?: $topic->create();
+
+            $subscription = $this->pubSubClient->subscription($this->gpsConfiguration->getSubscriptionName());
+            $subscription->exists() ?: $subscription->create();
+
+            $messages = $subscription->pull(['maxMessages' => $this->gpsConfiguration->getMaxMessagesPull()]);
 
             foreach ($messages as $message) {
                 yield $this->createEnvelopeFromPubSubMessage($message);
@@ -110,13 +114,14 @@ final class GpsReceiver implements ReceiverInterface
     private function createEnvelopeFromPubSubMessage(Message $message): Envelope
     {
         try {
-            $rawData = json_decode($message->data(), true, 512, JSON_THROW_ON_ERROR);
+            $body = $message->data();
+            $headers = json_decode($message->attribute('headers'), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
             throw new MessageDecodingFailedException($exception->getMessage(), 0, $exception);
         }
 
         try {
-            $envelope = $this->serializer->decode($rawData);
+            $envelope = $this->serializer->decode(['body' => $body, 'headers' => $headers]);
         } catch (MessageDecodingFailedException $exception) {
             throw $exception;
         }

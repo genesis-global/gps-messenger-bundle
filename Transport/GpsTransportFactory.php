@@ -14,7 +14,7 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
  */
 final class GpsTransportFactory implements TransportFactoryInterface
 {
-    private GpsConfigurationResolverInterface $gpsConfigurationResolver;
+    private $gpsConfigurationResolver;
 
     public function __construct(GpsConfigurationResolverInterface $gpsConfigurationResolver)
     {
@@ -26,9 +26,15 @@ final class GpsTransportFactory implements TransportFactoryInterface
      */
     public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
+        $gpsConfiguration = $this->gpsConfigurationResolver->resolve($dsn, $options);
+        $options = [];
+        if ($gpsConfiguration->getKeyFilePath() !== null) {
+            $options['keyFilePath'] = $gpsConfiguration->getKeyFilePath();
+        }
+
         return new GpsTransport(
-            new PubSubClient(),
-            $this->gpsConfigurationResolver->resolve($dsn, $options),
+            new PubSubClient($options),
+            $gpsConfiguration,
             $serializer
         );
     }

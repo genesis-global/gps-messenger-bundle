@@ -1,9 +1,8 @@
 {
-    "name": "petitpress/gps-messenger-bundle",
+    "name": "biforb4/gps-messenger-bundle",
     "type": "symfony-bundle",
-    "description": "Google Pub/Sub transport for Symfony Messenger",
+    "description": "Fork of petitpress/gps-messenger-bundle with support for PHP 7.3",
     "keywords": ["messenger", "symfony", "google", "pubsub"],
-    "homepage": "https://www.petitpress.sk",
     "license": "MIT",
     "authors": [
         {
@@ -16,7 +15,8 @@
         }
     ],
     "require": {
-        "php": ">=7.4.0",
+        "php": ">=7.3.0",
+        "ext-json": "*",
         "symfony/messenger": "^4.4|^5.1",
         "symfony/options-resolver": "^4.4|^5.1",
         "google/cloud-pubsub": "^1.29"

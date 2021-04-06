@@ -29,11 +29,11 @@ class GpsSenderTest extends TestCase
     private const ORDERED_KEY = 'ordered-key';
     private const TOPIC_NAME = 'topic-name';
 
-    private ObjectProphecy $gpsConfigurationProphecy;
-    private GpsSender $gpsSender;
-    private ObjectProphecy $pubSubClientProphecy;
-    private ObjectProphecy $serializerProphecy;
-    private ObjectProphecy $topicProphecy;
+    private $gpsConfigurationProphecy;
+    private $gpsSender;
+    private $pubSubClientProphecy;
+    private $serializerProphecy;
+    private $topicProphecy;
 
     protected function setUp(): void
     {
@@ -52,7 +52,7 @@ class GpsSenderTest extends TestCase
     public function testItDoesNotPublishIfTheLastStampIsOfTyeRedelivery(): void
     {
         $envelope = EnvelopeFactory::create(new RedeliveryStamp(0));
-        $envelopeArray = ['body' => []];
+        $envelopeArray = ['body' => [], 'headers' => ['class' => 'class', 'stamps' => 'stamps']];
 
         $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
 
@@ -64,16 +64,17 @@ class GpsSenderTest extends TestCase
     public function testItPublishesWithOrderingKey(): void
     {
         $envelope = EnvelopeFactory::create(new OrderingKeyStamp(self::ORDERED_KEY));
-        $envelopeArray = ['body' => []];
+        $envelopeArray = ['body' => '[]', 'headers' => ['class' => 'class', 'stamps' => 'stamps']];
 
         $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
 
         $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::TOPIC_NAME)->shouldBeCalledOnce();
 
         $this->pubSubClientProphecy->topic(self::TOPIC_NAME)->willReturn($this->topicProphecy->reveal())->shouldBeCalledOnce();
-
+        $this->topicProphecy->exists()->shouldBeCalledOnce()->willReturn(true);
         $this->topicProphecy->publish(Argument::allOf(
-            new Argument\Token\ObjectStateToken('data', \json_encode($envelopeArray)),
+            new Argument\Token\ObjectStateToken('data', $envelopeArray['body']),
+            new Argument\Token\ObjectStateToken('attributes', ['headers' => \json_encode($envelopeArray['headers'])]),
             new Argument\Token\ObjectStateToken('orderingKey', self::ORDERED_KEY),
         ))->shouldBeCalledOnce();
 
@@ -83,18 +84,36 @@ class GpsSenderTest extends TestCase
     public function testItPublishesWithoutOrderingKey(): void
     {
         $envelope = EnvelopeFactory::create();
-        $envelopeArray = ['body' => []];
+        $envelopeArray = ['body' => '[]', 'headers' => ['class' => 'class', 'stamps' => 'stamps']];
 
         $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
 
         $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::TOPIC_NAME)->shouldBeCalledOnce();
 
         $this->pubSubClientProphecy->topic(self::TOPIC_NAME)->willReturn($this->topicProphecy->reveal())->shouldBeCalledOnce();
-
+        $this->topicProphecy->exists()->shouldBeCalledOnce()->willReturn(true);
         $this->topicProphecy->publish(Argument::allOf(
-            new Argument\Token\ObjectStateToken('data', \json_encode($envelopeArray)),
+            new Argument\Token\ObjectStateToken('data', $envelopeArray['body']),
+            new Argument\Token\ObjectStateToken('attributes', ['headers' => \json_encode($envelopeArray['headers'])]),
             new Argument\Token\ObjectStateToken('orderingKey', null),
         ))->shouldBeCalledOnce();
+
+        self::assertSame($envelope, $this->gpsSender->send($envelope));
+    }
+
+    public function testItCreatesTopicWhenNotExists(): void
+    {
+        $envelope = EnvelopeFactory::create();
+        $envelopeArray = ['body' => '[]', 'headers' => ['class' => 'class', 'stamps' => 'stamps']];
+
+        $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
+
+        $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::TOPIC_NAME)->shouldBeCalledOnce();
+
+        $this->pubSubClientProphecy->topic(self::TOPIC_NAME)->willReturn($this->topicProphecy->reveal())->shouldBeCalledOnce();
+        $this->topicProphecy->exists()->shouldBeCalledOnce()->willReturn(false);
+        $this->topicProphecy->create()->shouldBeCalledOnce();
+        $this->topicProphecy->publish(Argument::any())->shouldBeCalledOnce();
 
         self::assertSame($envelope, $this->gpsSender->send($envelope));
     }

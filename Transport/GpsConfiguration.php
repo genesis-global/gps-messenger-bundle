@@ -9,15 +9,17 @@ namespace PetitPress\GpsMessengerBundle\Transport;
  */
 final class GpsConfiguration implements GpsConfigurationInterface
 {
-    private string $queueName;
-    private string $subscriptionName;
-    private int $maxMessagesPull;
+    private $queueName;
+    private $subscriptionName;
+    private $maxMessagesPull;
+    private $keyFilePath;
 
-    public function __construct(string $queueName, string $subscriptionName, int $maxMessagesPull)
+    public function __construct(string $queueName, string $subscriptionName, int $maxMessagesPull, ?string $keyFilePath = null)
     {
         $this->queueName = $queueName;
         $this->subscriptionName = $subscriptionName;
         $this->maxMessagesPull = $maxMessagesPull;
+        $this->keyFilePath = $keyFilePath;
     }
 
     public function getQueueName(): string
@@ -33,5 +35,10 @@ final class GpsConfiguration implements GpsConfigurationInterface
     public function getMaxMessagesPull(): int
     {
         return $this->maxMessagesPull;
+    }
+
+    public function getKeyFilePath(): ?string
+    {
+        return $this->keyFilePath;
     }
 }

@@ -7,6 +7,7 @@ namespace PetitPress\GpsMessengerBundle\Tests\Transport;
 use Google\Cloud\PubSub\Message;
 use Google\Cloud\PubSub\PubSubClient;
 use Google\Cloud\PubSub\Subscription;
+use Google\Cloud\PubSub\Topic;
 use PetitPress\GpsMessengerBundle\Transport\GpsConfigurationInterface;
 use PetitPress\GpsMessengerBundle\Transport\GpsReceiver;
 use PetitPress\GpsMessengerBundle\Transport\Stamp\GpsReceivedStamp;
@@ -24,12 +25,14 @@ class GpsReceiverTest extends TestCase
     use ProphecyTrait;
 
     private const SUBSCRIPTION_NAME = 'subscription-name';
+    private const MAX_MESSAGES = 10;
 
-    private ObjectProphecy $gpsConfigurationProphecy;
-    private GpsReceiver $gpsReceiver;
-    private ObjectProphecy $pubSubClientProphecy;
-    private ObjectProphecy $serializerProphecy;
-    private ObjectProphecy $subscriptionProphecy;
+    private $gpsConfigurationProphecy;
+    private $gpsReceiver;
+    private $pubSubClientProphecy;
+    private $serializerProphecy;
+    private $subscriptionProphecy;
+    private $topicProphecy;
 
     protected function setUp(): void
     {
@@ -37,6 +40,7 @@ class GpsReceiverTest extends TestCase
         $this->pubSubClientProphecy = $this->prophesize(PubSubClient::class);
         $this->serializerProphecy = $this->prophesize(SerializerInterface::class);
         $this->subscriptionProphecy = $this->prophesize(Subscription::class);
+        $this->topicProphecy = $this->prophesize(Topic::class);
 
         $this->gpsReceiver = new GpsReceiver(
             $this->pubSubClientProphecy->reveal(),
@@ -65,5 +69,27 @@ class GpsReceiverTest extends TestCase
         $this->expectExceptionMessage('No GpsReceivedStamp found on the Envelope.');
 
         $this->gpsReceiver->reject(EnvelopeFactory::create());
+    }
+
+    public function testItCanCreateTopicAndSubscriptionIfNotExist(): void
+    {
+        $gpsMessage = $this->prophesize(Message::class);
+
+        $this->gpsConfigurationProphecy->getSubscriptionName()->willReturn(self::SUBSCRIPTION_NAME)->shouldBeCalledOnce();
+        $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::SUBSCRIPTION_NAME)->shouldBeCalledOnce();
+        $this->gpsConfigurationProphecy->getMaxMessagesPull()->willReturn(self::MAX_MESSAGES)->shouldBeCalledOnce();
+
+        $this->pubSubClientProphecy->subscription(self::SUBSCRIPTION_NAME)->willReturn($this->subscriptionProphecy->reveal())->shouldBeCalledOnce();
+        $this->subscriptionProphecy->exists()->shouldBeCalledOnce()->willReturn(false);
+        $this->subscriptionProphecy->create()->shouldBeCalledOnce();
+
+        $this->pubSubClientProphecy->topic(self::SUBSCRIPTION_NAME)->willReturn($this->topicProphecy->reveal())->shouldBeCalledOnce();
+        $this->topicProphecy->exists()->shouldBeCalledOnce()->willReturn(false);
+        $this->topicProphecy->create()->shouldBeCalledOnce();
+
+        $this->subscriptionProphecy->pull(['maxMessages' => self::MAX_MESSAGES])->shouldBeCalledOnce()->willReturn($gpsMessage);
+        foreach ($this->gpsReceiver->get() as $message) {
+            self::assertInstanceOf(Message::class, $message);
+        }
     }
 }

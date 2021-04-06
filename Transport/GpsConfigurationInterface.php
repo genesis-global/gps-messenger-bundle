@@ -14,4 +14,6 @@ interface GpsConfigurationInterface
     public function getSubscriptionName(): string;
 
     public function getMaxMessagesPull(): int;
+
+    public function getKeyFilePath(): ?string;
 }
