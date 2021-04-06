@@ -28,7 +28,7 @@ final class GpsTransportFactory implements TransportFactoryInterface
     {
         $gpsConfiguration = $this->gpsConfigurationResolver->resolve($dsn, $options);
         $options = [];
-        if($gpsConfiguration->getKeyFilePath() !== null) {
+        if ($gpsConfiguration->getKeyFilePath() !== null) {
             $options['keyFilePath'] = $gpsConfiguration->getKeyFilePath();
         }
 
