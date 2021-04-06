@@ -76,10 +76,11 @@ class GpsReceiverTest extends TestCase
         $gpsMessage = $this->prophesize(Message::class);
 
         $this->gpsConfigurationProphecy->getSubscriptionName()->willReturn(self::SUBSCRIPTION_NAME)->shouldBeCalledOnce();
-        $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::SUBSCRIPTION_NAME)->shouldBeCalledOnce();
+        $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::SUBSCRIPTION_NAME)->shouldBeCalledTimes(2);
         $this->gpsConfigurationProphecy->getMaxMessagesPull()->willReturn(self::MAX_MESSAGES)->shouldBeCalledOnce();
 
-        $this->pubSubClientProphecy->subscription(self::SUBSCRIPTION_NAME)->willReturn($this->subscriptionProphecy->reveal())->shouldBeCalledOnce();
+        $this->pubSubClientProphecy->subscription(self::SUBSCRIPTION_NAME, self::SUBSCRIPTION_NAME)
+            ->willReturn($this->subscriptionProphecy->reveal())->shouldBeCalledOnce();
         $this->subscriptionProphecy->exists()->shouldBeCalledOnce()->willReturn(false);
         $this->subscriptionProphecy->create()->shouldBeCalledOnce();
 

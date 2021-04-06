@@ -13,13 +13,20 @@ final class GpsConfiguration implements GpsConfigurationInterface
     private $subscriptionName;
     private $maxMessagesPull;
     private $keyFilePath;
+    private $messageType;
 
-    public function __construct(string $queueName, string $subscriptionName, int $maxMessagesPull, ?string $keyFilePath = null)
-    {
+    public function __construct(
+        string $queueName,
+        string $subscriptionName,
+        int $maxMessagesPull,
+        ?string $keyFilePath = null,
+        ?string $messageType = null
+    ) {
         $this->queueName = $queueName;
         $this->subscriptionName = $subscriptionName;
         $this->maxMessagesPull = $maxMessagesPull;
         $this->keyFilePath = $keyFilePath;
+        $this->messageType = $messageType;
     }
 
     public function getQueueName(): string
@@ -40,5 +47,10 @@ final class GpsConfiguration implements GpsConfigurationInterface
     public function getKeyFilePath(): ?string
     {
         return $this->keyFilePath;
+    }
+
+    public function getMessageType(): ?string
+    {
+        return $this->messageType;
     }
 }

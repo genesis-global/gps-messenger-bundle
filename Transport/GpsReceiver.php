@@ -45,7 +45,10 @@ final class GpsReceiver implements ReceiverInterface
             $topic = $this->pubSubClient->topic($this->gpsConfiguration->getQueueName());
             $topic->exists() ?: $topic->create();
 
-            $subscription = $this->pubSubClient->subscription($this->gpsConfiguration->getSubscriptionName());
+            $subscription = $this->pubSubClient->subscription(
+                $this->gpsConfiguration->getSubscriptionName(),
+                $this->gpsConfiguration->getQueueName()
+            );
             $subscription->exists() ?: $subscription->create();
 
             $messages = $subscription->pull(['maxMessages' => $this->gpsConfiguration->getMaxMessagesPull()]);
@@ -68,8 +71,7 @@ final class GpsReceiver implements ReceiverInterface
 
             $this->pubSubClient
                 ->subscription($this->gpsConfiguration->getSubscriptionName())
-                ->acknowledge($gpsReceivedStamp->getGpsMessage())
-            ;
+                ->acknowledge($gpsReceivedStamp->getGpsMessage());
         } catch (Throwable $exception) {
             throw new TransportException($exception->getMessage(), 0, $exception);
         }
@@ -90,8 +92,7 @@ final class GpsReceiver implements ReceiverInterface
 
             $this->pubSubClient
                 ->subscription($this->gpsConfiguration->getSubscriptionName())
-                ->modifyAckDeadline($gpsReceivedStamp->getGpsMessage(), 0)
-            ;
+                ->modifyAckDeadline($gpsReceivedStamp->getGpsMessage(), 0);
         } catch (Throwable $exception) {
             throw new TransportException($exception->getMessage(), 0, $exception);
         }
@@ -116,6 +117,9 @@ final class GpsReceiver implements ReceiverInterface
         try {
             $body = $message->data();
             $headers = json_decode($message->attribute('headers'), true, 512, JSON_THROW_ON_ERROR);
+            if (empty($headers['type'])) {
+                $headers['type'] = $this->gpsConfiguration->getMessageType();
+            }
         } catch (JsonException $exception) {
             throw new MessageDecodingFailedException($exception->getMessage(), 0, $exception);
         }
