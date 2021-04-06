@@ -117,7 +117,7 @@ final class GpsReceiver implements ReceiverInterface
         try {
             $body = $message->data();
             $headers = json_decode($message->attribute('headers'), true, 512, JSON_THROW_ON_ERROR);
-            if(empty($headers['type'])) {
+            if (empty($headers['type'])) {
                 $headers['type'] = $this->gpsConfiguration->getMessageType();
             }
         } catch (JsonException $exception) {
