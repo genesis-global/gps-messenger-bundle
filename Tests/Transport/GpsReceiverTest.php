@@ -73,9 +73,7 @@ class GpsReceiverTest extends TestCase
 
     public function testItCanCreateTopicAndSubscriptionIfNotExist(): void
     {
-        $gpsMessage = $this->prophesize(Message::class)->reveal();
-        $gpsMessage->attribute('headers')->willReturn([]);
-        $gpsMessage->data()->willReturn([]);
+        $gpsMessage = $this->prophesize(Message::class);
 
         $this->gpsConfigurationProphecy->getSubscriptionName()->willReturn(self::SUBSCRIPTION_NAME)->shouldBeCalledOnce();
         $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::SUBSCRIPTION_NAME)->shouldBeCalledOnce();
