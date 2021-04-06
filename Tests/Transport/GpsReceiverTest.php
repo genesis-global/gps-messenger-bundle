@@ -90,7 +90,7 @@ class GpsReceiverTest extends TestCase
         $this->topicProphecy->create()->shouldBeCalledOnce();
 
         $this->subscriptionProphecy->pull(['maxMessages' => self::MAX_MESSAGES])->shouldBeCalledOnce()->willReturn($gpsMessage);
-        foreach($this->gpsReceiver->get() as $message) {
+        foreach ($this->gpsReceiver->get() as $message) {
             self::assertInstanceOf(Message::class, $message);
         }
     }
