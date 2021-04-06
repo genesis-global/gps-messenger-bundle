@@ -1,5 +1,5 @@
 {
-    "name": "biforb4/gps-messenger-bundle",
+    "name": "genesis-global/gps-messenger-bundle",
     "type": "symfony-bundle",
     "description": "Fork of petitpress/gps-messenger-bundle with support for PHP 7.3",
     "keywords": ["messenger", "symfony", "google", "pubsub"],
