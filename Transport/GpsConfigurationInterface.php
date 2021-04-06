@@ -16,4 +16,6 @@ interface GpsConfigurationInterface
     public function getMaxMessagesPull(): int;
 
     public function getKeyFilePath(): ?string;
+
+    public function getMessageType(): ?string;
 }

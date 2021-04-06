@@ -24,6 +24,7 @@ final class GpsConfigurationResolver implements GpsConfigurationResolverInterfac
         $optionsResolver
             ->setDefault('max_messages_pull', self::DEFAULT_MAX_MESSAGES_PULL)
             ->setDefault('key_file_path', null)
+            ->setDefault('message_type', null)
             ->setDefault('topic', static function (OptionsResolver $topicResolver): void {
                 $topicResolver
                     ->setDefault('name', self::DEFAULT_TOPIC_NAME)
@@ -41,6 +42,7 @@ final class GpsConfigurationResolver implements GpsConfigurationResolverInterfac
             })
             ->setAllowedTypes('max_messages_pull', ['int', 'string'])
             ->setAllowedTypes('key_file_path', ['string'])
+            ->setAllowedTypes('message_type', ['string'])
         ;
 
         $dnsOptions = [];
@@ -62,7 +64,8 @@ final class GpsConfigurationResolver implements GpsConfigurationResolverInterfac
             $resolvedOptions['topic']['name'],
             $resolvedOptions['queue']['name'],
             $resolvedOptions['max_messages_pull'],
-            $resolvedOptions['key_file_path']
+            $resolvedOptions['key_file_path'],
+            $resolvedOptions['message_type']
         );
     }
 }
