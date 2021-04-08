@@ -50,6 +50,7 @@ framework:
             gps_transport:
                 dsn: 'gps://default'
                 options:
+                    key_file_path: /path/to/gcp-key.json #optional. Can be used instead of setting environment variables.
                     max_messages_pull: 10 # optional (default: 10)
                     topic: # optional (default name: messages)
                         name: 'messages'
@@ -64,7 +65,7 @@ framework:
     messenger:
         transports:
             gps_transport:
-                dsn: 'gps://default/messages?max_messages_pull=10'
+                dsn: 'gps://default/messages?max_messages_pull=10&key_file_path=/path/to/gcp-key.json'
 ```
 
 ### Step 4: Use available stamps if needed
