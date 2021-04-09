@@ -41,8 +41,8 @@ final class GpsConfigurationResolver implements GpsConfigurationResolverInterfac
                 return ((int) filter_var($value, FILTER_SANITIZE_NUMBER_INT)) ?: null;
             })
             ->setAllowedTypes('max_messages_pull', ['int', 'string'])
-            ->setAllowedTypes('key_file_path', ['string'])
-            ->setAllowedTypes('message_type', ['string'])
+            ->setAllowedTypes('key_file_path', ['string', 'null'])
+            ->setAllowedTypes('message_type', ['string', 'null'])
         ;
 
         $dnsOptions = [];
