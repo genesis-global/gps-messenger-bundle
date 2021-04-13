@@ -24,8 +24,6 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
  */
 class GpsSenderTest extends TestCase
 {
-    use ProphecyTrait;
-
     private const ORDERED_KEY = 'ordered-key';
     private const TOPIC_NAME = 'topic-name';
 
@@ -45,7 +43,7 @@ class GpsSenderTest extends TestCase
         $this->gpsSender = new GpsSender(
             $this->pubSubClientProphecy->reveal(),
             $this->gpsConfigurationProphecy->reveal(),
-            $this->serializerProphecy->reveal(),
+            $this->serializerProphecy->reveal()
         );
     }
 
@@ -75,7 +73,7 @@ class GpsSenderTest extends TestCase
         $this->topicProphecy->publish(Argument::allOf(
             new Argument\Token\ObjectStateToken('data', $envelopeArray['body']),
             new Argument\Token\ObjectStateToken('attributes', ['headers' => \json_encode($envelopeArray['headers'])]),
-            new Argument\Token\ObjectStateToken('orderingKey', self::ORDERED_KEY),
+            new Argument\Token\ObjectStateToken('orderingKey', self::ORDERED_KEY)
         ))->shouldBeCalledOnce();
 
         self::assertSame($envelope, $this->gpsSender->send($envelope));
@@ -95,7 +93,7 @@ class GpsSenderTest extends TestCase
         $this->topicProphecy->publish(Argument::allOf(
             new Argument\Token\ObjectStateToken('data', $envelopeArray['body']),
             new Argument\Token\ObjectStateToken('attributes', ['headers' => \json_encode($envelopeArray['headers'])]),
-            new Argument\Token\ObjectStateToken('orderingKey', null),
+            new Argument\Token\ObjectStateToken('orderingKey', null)
         ))->shouldBeCalledOnce();
 
         self::assertSame($envelope, $this->gpsSender->send($envelope));
