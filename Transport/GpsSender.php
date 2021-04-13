@@ -40,7 +40,7 @@ final class GpsSender implements SenderInterface
 
         $messageBuilder = new MessageBuilder();
         $messageBuilder = $messageBuilder->setData($encodedMessage['body'])
-            ->addAttribute('headers', json_encode($encodedMessage['headers'], JSON_THROW_ON_ERROR));
+            ->addAttribute('headers', json_encode($encodedMessage['headers']));
 
         $redeliveryStamp = $envelope->last(RedeliveryStamp::class);
         if ($redeliveryStamp instanceof RedeliveryStamp) {

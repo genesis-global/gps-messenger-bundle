@@ -22,8 +22,6 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
  */
 class GpsReceiverTest extends TestCase
 {
-    use ProphecyTrait;
-
     private const SUBSCRIPTION_NAME = 'subscription-name';
     private const MAX_MESSAGES = 10;
 
@@ -45,7 +43,7 @@ class GpsReceiverTest extends TestCase
         $this->gpsReceiver = new GpsReceiver(
             $this->pubSubClientProphecy->reveal(),
             $this->gpsConfigurationProphecy->reveal(),
-            $this->serializerProphecy->reveal(),
+            $this->serializerProphecy->reveal()
         );
     }
 
