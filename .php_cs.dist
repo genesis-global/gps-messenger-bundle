@@ -8,7 +8,7 @@ $finder = PhpCsFixer\Finder::create()
 return PhpCsFixer\Config::create()
     ->setRiskyAllowed(true)
     ->setRules([
-        '@PHP74Migration' => true,
+//        '@PHP74Migration' => true,
         'align_multiline_comment' => [
             'comment_type' => 'phpdocs_only',
         ],
