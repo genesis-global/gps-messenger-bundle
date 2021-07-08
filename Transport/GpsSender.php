@@ -41,7 +41,7 @@ final class GpsSender implements SenderInterface
         $messageBuilder = new MessageBuilder();
         $messageBuilder = $messageBuilder->setData($encodedMessage['body']);
 
-        if (array_key_exists('headers', $encodedMessage)) {
+        if (\array_key_exists('headers', $encodedMessage)) {
             $messageBuilder->addAttribute('headers', json_encode($encodedMessage['headers']));
         }
 
