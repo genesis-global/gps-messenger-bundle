@@ -39,8 +39,11 @@ final class GpsSender implements SenderInterface
         $encodedMessage = $this->serializer->encode($envelope);
 
         $messageBuilder = new MessageBuilder();
-        $messageBuilder = $messageBuilder->setData($encodedMessage['body'])
-            ->addAttribute('headers', json_encode($encodedMessage['headers']));
+        $messageBuilder = $messageBuilder->setData($encodedMessage['body']);
+
+        if (\array_key_exists('headers', $encodedMessage)) {
+            $messageBuilder = $messageBuilder->addAttribute('headers', json_encode($encodedMessage['headers']));
+        }
 
         $redeliveryStamp = $envelope->last(RedeliveryStamp::class);
         if ($redeliveryStamp instanceof RedeliveryStamp) {
