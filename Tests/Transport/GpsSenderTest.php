@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PetitPress\GpsMessengerBundle\Tests\Transport;
 
-use Google\Cloud\PubSub\Message;
+use Google\Cloud\PubSub\BatchPublisher;
 use Google\Cloud\PubSub\PubSubClient;
 use Google\Cloud\PubSub\Topic;
 use PetitPress\GpsMessengerBundle\Transport\GpsConfigurationInterface;
@@ -12,11 +12,7 @@ use PetitPress\GpsMessengerBundle\Transport\GpsSender;
 use PetitPress\GpsMessengerBundle\Transport\Stamp\OrderingKeyStamp;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
-use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
-use Symfony\Component\Messenger\Stamp\StampInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 
 /**
@@ -29,19 +25,23 @@ class GpsSenderTest extends TestCase
 
     private $gpsConfigurationProphecy;
     private $gpsSender;
-    private $pubSubClientProphecy;
     private $serializerProphecy;
     private $topicProphecy;
 
     protected function setUp(): void
     {
         $this->gpsConfigurationProphecy = $this->prophesize(GpsConfigurationInterface::class);
-        $this->pubSubClientProphecy = $this->prophesize(PubSubClient::class);
         $this->serializerProphecy = $this->prophesize(SerializerInterface::class);
         $this->topicProphecy = $this->prophesize(Topic::class);
 
+        $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::TOPIC_NAME)->shouldBeCalledOnce();
+        $this->gpsConfigurationProphecy->getBatchSize()->willReturn(0);
+
+        $pubSubClientProphecy = $this->prophesize(PubSubClient::class);
+        $pubSubClientProphecy->topic(self::TOPIC_NAME)->willReturn($this->topicProphecy->reveal())->shouldBeCalledOnce();
+
         $this->gpsSender = new GpsSender(
-            $this->pubSubClientProphecy->reveal(),
+            $pubSubClientProphecy->reveal(),
             $this->gpsConfigurationProphecy->reveal(),
             $this->serializerProphecy->reveal()
         );
@@ -54,7 +54,8 @@ class GpsSenderTest extends TestCase
 
         $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
 
-        $this->pubSubClientProphecy->topic(Argument::any())->shouldNotBeCalled();
+        $this->topicProphecy->publish(Argument::any())->shouldNotBeCalled();
+        $this->topicProphecy->batchPublisher(Argument::any())->shouldNotBeCalled();
 
         self::assertSame($envelope, $this->gpsSender->send($envelope));
     }
@@ -66,9 +67,6 @@ class GpsSenderTest extends TestCase
 
         $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
 
-        $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::TOPIC_NAME)->shouldBeCalledOnce();
-
-        $this->pubSubClientProphecy->topic(self::TOPIC_NAME)->willReturn($this->topicProphecy->reveal())->shouldBeCalledOnce();
         $this->topicProphecy->exists()->shouldBeCalledOnce()->willReturn(true);
         $this->topicProphecy->publish(Argument::allOf(
             new Argument\Token\ObjectStateToken('data', $envelopeArray['body']),
@@ -88,7 +86,6 @@ class GpsSenderTest extends TestCase
 
         $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::TOPIC_NAME)->shouldBeCalledOnce();
 
-        $this->pubSubClientProphecy->topic(self::TOPIC_NAME)->willReturn($this->topicProphecy->reveal())->shouldBeCalledOnce();
         $this->topicProphecy->exists()->shouldBeCalledOnce()->willReturn(true);
         $this->topicProphecy->publish(Argument::allOf(
             new Argument\Token\ObjectStateToken('data', $envelopeArray['body']),
@@ -106,12 +103,30 @@ class GpsSenderTest extends TestCase
 
         $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
 
-        $this->gpsConfigurationProphecy->getQueueName()->willReturn(self::TOPIC_NAME)->shouldBeCalledOnce();
-
-        $this->pubSubClientProphecy->topic(self::TOPIC_NAME)->willReturn($this->topicProphecy->reveal())->shouldBeCalledOnce();
         $this->topicProphecy->exists()->shouldBeCalledOnce()->willReturn(false);
         $this->topicProphecy->create()->shouldBeCalledOnce();
         $this->topicProphecy->publish(Argument::any())->shouldBeCalledOnce();
+
+        self::assertSame($envelope, $this->gpsSender->send($envelope));
+    }
+
+    public function testItPublishesInBatch()
+    {
+        $envelope = EnvelopeFactory::create();
+        $envelopeArray = ['body' => '[]', 'headers' => ['class' => 'class', 'stamps' => 'stamps']];
+
+        $this->serializerProphecy->encode($envelope)->willReturn($envelopeArray)->shouldBeCalledOnce();
+
+        $this->gpsConfigurationProphecy->getBatchSize()->willReturn(10);
+        $this->topicProphecy->exists()->shouldBeCalledOnce()->willReturn(true);
+        $batchPublisher = $this->prophesize(BatchPublisher::class);
+        $batchPublisher->publish(Argument::allOf(
+            new Argument\Token\ObjectStateToken('data', $envelopeArray['body']),
+            new Argument\Token\ObjectStateToken('attributes', ['headers' => \json_encode($envelopeArray['headers'])]),
+            new Argument\Token\ObjectStateToken('orderingKey', null)
+        ))->shouldBeCalledOnce();
+        $this->topicProphecy->batchPublisher(Argument::withEntry('batchSize', 10))->shouldBeCalledOnce()
+        ->willReturn($batchPublisher->reveal());
 
         self::assertSame($envelope, $this->gpsSender->send($envelope));
     }

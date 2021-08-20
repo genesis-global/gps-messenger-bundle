@@ -18,4 +18,6 @@ interface GpsConfigurationInterface
     public function getKeyFilePath(): ?string;
 
     public function getMessageType(): ?string;
+
+    public function getBatchSize(): int;
 }
