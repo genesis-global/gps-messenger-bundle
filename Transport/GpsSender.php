@@ -17,18 +17,18 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
  */
 final class GpsSender implements SenderInterface
 {
-    private $pubSubClient;
     private $gpsConfiguration;
     private $serializer;
+    private $topic;
 
     public function __construct(
         PubSubClient $pubSubClient,
         GpsConfigurationInterface $gpsConfiguration,
         SerializerInterface $serializer
     ) {
-        $this->pubSubClient = $pubSubClient;
         $this->gpsConfiguration = $gpsConfiguration;
         $this->serializer = $serializer;
+        $this->topic = $pubSubClient->topic($this->gpsConfiguration->getQueueName());
     }
 
     /**
@@ -56,10 +56,14 @@ final class GpsSender implements SenderInterface
             $messageBuilder = $messageBuilder->setOrderingKey($orderingKeyStamp->getOrderingKey());
         }
 
-        $topic = $this->pubSubClient->topic($this->gpsConfiguration->getQueueName());
-        $topic->exists() ?: $topic->create();
-
-        $topic->publish($messageBuilder->build());
+        $this->topic->exists() ?: $this->topic->create();
+        if ($this->gpsConfiguration->getBatchSize() > 0) {
+            $this->topic
+                ->batchPublisher(['batchSize' => $this->gpsConfiguration->getBatchSize()])
+                ->publish($messageBuilder->build());
+        } else {
+            $this->topic->publish($messageBuilder->build());
+        }
 
         return $envelope;
     }

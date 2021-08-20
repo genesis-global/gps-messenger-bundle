@@ -25,7 +25,8 @@
         "phpunit/phpunit": "^8",
         "phpspec/prophecy-phpunit": "^1.1",
         "friendsofphp/php-cs-fixer": "^2.17",
-        "phpstan/phpstan": "^0.12.64"
+        "phpstan/phpstan": "^0.12.64",
+        "jangregor/phpstan-prophecy": "^0.8.1"
     },
     "autoload": {
         "psr-4": { "PetitPress\\GpsMessengerBundle\\": "" }

@@ -56,6 +56,7 @@ framework:
                         name: 'messages'
                     queue: # optional (default the same as topic.name)
                         name: 'messages'
+                    batch_size: 0 # optional (default: 0) If set above 0 it uses pubsubs batch publisher 
 ```
 or:
 ```yaml

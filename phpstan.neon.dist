@@ -1,2 +1,8 @@
 parameters:
-	ignoreErrors:
+    level: 5
+    paths:
+        - Tests
+        - Transport
+    ignoreErrors:
+includes:
+    - vendor/jangregor/phpstan-prophecy/extension.neon
